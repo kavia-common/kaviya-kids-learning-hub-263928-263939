@@ -28,13 +28,17 @@ Or with hot reload (dev only):
 npm run dev
 ```
 
-The server starts on `PORT` (default 3001). Health check: `GET /`.
+The server starts on `PORT` (default 3001). Health checks:
+- GET `/` -> { "message": "Healthy" }
+- GET `/healthz` -> returns 500 with DB error when DB connection failed (degraded mode)
 
 ## Environment Variables
 
 - `PORT` - HTTP port (default 3001)
 - `JWT_SECRET` - Secret for signing JWT tokens
-- `MONGODB_URI` - MongoDB connection string (e.g., `mongodb://localhost:27017/kaviya_kids_learn`)
+- `MONGODB_URI` - MongoDB connection string (default in `.env.example`: `mongodb://appuser:dbuser123@kaviya_database:5000/myapp?authSource=admin`)
+
+Tip: Always run `npm install` after pulling changes to ensure dependencies are installed before starting the server.
 
 ## REST API
 
@@ -120,6 +124,3 @@ XP: +10 per correct answer. Level increases every 100 XP (Level N Achiever badge
 - Centralized error handler standardizes error responses.
 - TODO: Add rate limiting to auth routes.
 - Avoid logging sensitive information.
-
-```
-
