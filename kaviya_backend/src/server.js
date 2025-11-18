@@ -40,7 +40,13 @@ app.get('/', (req, res) => {
   res.send('Backend is running.');
 });
 
-// API routes
+/**
+ * PUBLIC_INTERFACE
+ * API routes are mounted under /api.
+ * - /api/login and /api/signup are implemented in routes/index.js
+ * - All errors are centralized via errorHandler with response shape:
+ *   { "error": { "code": string, "message": string, "details"?: object } }
+ */
 app.use('/api', router);
 
 // Centralized error handling

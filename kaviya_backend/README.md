@@ -1,132 +1,52 @@
-# Kaviya Backend (Node.js + Express)
+# Kaviya Backend - API Server
 
-Node.js + Express backend for Kaviya Kids Learn with MongoDB, JWT authentication, quizzes, gamified XP/levels, and rewards.
+This service exposes REST endpoints for authentication, quizzes, progress, rewards and parent dashboard.
 
-## Setup
+## Quick start
 
-1. Copy environment example and edit values:
-```
-cp .env.example .env
-```
+1) Install dependencies
+   npm install
 
-2. Install dependencies (requires Node 18+):
-```
-npm install
-```
+2) Configure environment (see `.env.example`):
+   - PORT=3001
+   - JWT_SECRET=your-strong-secret
+   - MONGODB_URI=mongodb://localhost:27017/kaviya
+   - ALLOWED_ORIGINS=http://localhost:3000
 
-3. Seed sample quizzes (ensure MongoDB is running and MONGODB_URI is set):
-```
-npm run seed
-```
+3) Start
+   npm run start
 
-4. Start the server:
-```
-npm run start
-```
-Or with hot reload (dev only):
-```
-npm run dev
-```
+## CORS
 
-Note: The start script runs a prestart step to install dependencies automatically in containerized/CI environments.
+The server reads `ALLOWED_ORIGINS` (comma-separated) and will only allow those origins.
+For local development with the React app:
+- Frontend on http://localhost:3000
+- Backend on http://localhost:3001
+Set:
+  ALLOWED_ORIGINS=http://localhost:3000
 
-The server starts on `PORT` (default 3001). Health checks:
-- GET `/` -> { "message": "Healthy" } (also satisfies "Backend is running." root check if you prefer consuming a string)
-- GET `/healthz` -> returns 500 with DB error when DB connection failed (degraded mode)
+Note: If you set `ALLOWED_ORIGINS=*`, credentials (cookies) are disabled as per CORS rules.
 
-## Environment Variables
+## Auth Routes
 
-- `PORT` - HTTP port (default 3001)
-- `JWT_SECRET` - Secret for signing JWT tokens
-- `MONGODB_URI` - MongoDB connection string
-  - For local development as requested, use: `mongodb://localhost:27017/kaviyaLMS` (already in `.env.example`)
-- Optional `KAVIYA_DB_HOST` hint used by `getMongoUri()` to prefer localhost vs service name.
-- Optional `ALLOWED_ORIGINS` CORS allowlist (comma-separated), defaults to `http://localhost:3000`
+- POST /api/signup
+  Body: { username, password, role: "kid" | "parent" }
+  Response: { token, user }
 
-Tip: Always run `npm install` after pulling changes to ensure dependencies are installed before starting the server (prestart will also help in CI).
+- POST /api/login
+  Body: { username, password }
+  Response: { token, user }
 
-## REST API
+Both routes emit minimal structured logs to stdout for temporary troubleshooting and return consistent error shapes:
+{
+  "error": {
+    "code": "AUTH_INVALID",
+    "message": "Invalid credentials"
+  }
+}
 
-Base path for APIs: `/api`
+## Health
 
-All responses use a consistent shape:
-```
-{ "error": { "code": string, "message": string } } // For errors
-```
+- GET / returns "Backend is running."
+- GET /healthz returns a 500 JSON error if DB failed at startup (degraded mode).
 
-### Auth
-
-- POST `/api/signup`
-  - Body: `{ "username": string, "password": string, "role": "kid"|"parent" }`
-  - Response: `{ "token": string, "user": { "id", "username", "role", "xp", "level", "badges" } }`
-
-- POST `/api/login`
-  - Body: `{ "username": string, "password": string }`
-  - Response: `{ "token": string, "user": { "id", "username", "role", "xp", "level", "badges" } }`
-
-JWT tokens should be sent via `Authorization: Bearer <token>` for protected routes.
-
-### Quizzes
-
-- GET `/api/quiz/:subject`
-  - Query: `revealAnswers=true` to include `answerIndex`
-  - Response: `{ "quiz": { "id", "subject", "questions": [{ "question", "options", ("answerIndex")? }] } }`
-  - Public route (no auth required).
-
-- POST `/api/submit-quiz` (kid only)
-  - Body: `{ "userId": string, "quizId": string, "answers": number[] }`
-  - Response:
-    ```
-    {
-      "correct": number,
-      "total": number,
-      "xpAwarded": number,
-      "newLevel": number,
-      "newBadges": string[],
-      "rewards": { "petStage": number, "stickers": string[], "spinAvailable": boolean }
-    }
-    ```
-
-XP: +10 per correct answer. Level increases every 100 XP (Level N Achiever badge). Rewards: pet stage increases every 2 levels; new sticker each level-up; spin available on level-up or if score >= 80%.
-
-### Dashboard
-
-- GET `/api/dashboard/:id` (kid or parent)
-  - Response: `{ "xp": number, "level": number, "badges": string[] }`
-  - Auth:
-    - Kids can fetch only their own id.
-    - Parents can fetch for linked children (see `User.children`).
-
-### Parent
-
-- GET `/api/parent/:id` (parent only)
-  - Child aggregated stats:
-    ```
-    {
-      "totalQuizzes": number,
-      "averageScore": number, // percentage across all attempts
-      "lastAttempts": [
-        { "score": number, "total": number, "percentage": number, "timestamp": string, "quizId": string }
-      ]
-    }
-    ```
-
-### Rewards
-
-- GET `/api/rewards/:id` (kid or parent)
-  - Response: `{ "petStage": number, "stickers": string[], "spinAvailable": boolean }`
-  - Same access rules as dashboard.
-
-## Data Models (Mongoose)
-
-- User: `username`, `passwordHash`, `role`, `xp`, `level`, `avatar`, `badges[]`, `children[]`
-- Quiz: `subject`, `questions[]` with `question`, `options[]`, `answerIndex`
-- Progress: `userId`, `quizId`, `score`, `total`, `percentage`, `timestamp`
-- Reward: `userId`, `petStage`, `stickers[]`, `spinAvailable`
-
-## Notes
-
-- Centralized error handler standardizes error responses.
-- TODO: Add rate limiting to auth routes.
-- Avoid logging sensitive information.
-- For local development per request, ensure MongoDB is running on `mongodb://localhost:27017/kaviyaLMS`.
