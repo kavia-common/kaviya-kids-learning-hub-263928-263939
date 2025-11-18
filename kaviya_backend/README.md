@@ -28,6 +28,8 @@ Or with hot reload (dev only):
 npm run dev
 ```
 
+Note: The start script runs a prestart step to install dependencies automatically in containerized/CI environments.
+
 The server starts on `PORT` (default 3001). Health checks:
 - GET `/` -> { "message": "Healthy" }
 - GET `/healthz` -> returns 500 with DB error when DB connection failed (degraded mode)
@@ -37,8 +39,9 @@ The server starts on `PORT` (default 3001). Health checks:
 - `PORT` - HTTP port (default 3001)
 - `JWT_SECRET` - Secret for signing JWT tokens
 - `MONGODB_URI` - MongoDB connection string (default in `.env.example`: `mongodb://appuser:dbuser123@kaviya_database:5000/myapp?authSource=admin`)
+- Optional `KAVIYA_DB_HOST` hint used by `getMongoUri()` to prefer localhost vs service name.
 
-Tip: Always run `npm install` after pulling changes to ensure dependencies are installed before starting the server.
+Tip: Always run `npm install` after pulling changes to ensure dependencies are installed before starting the server (prestart will also help in CI).
 
 ## REST API
 

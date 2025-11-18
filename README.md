@@ -6,4 +6,4 @@ Backend quick start:
 - npm install
 - npm run start
 
-Ensure your MongoDB is reachable at the URI configured in `.env` (defaults to `mongodb://appuser:dbuser123@kaviya_database:5000/myapp?authSource=admin`).
+Ensure your MongoDB is reachable at the URI configured in `.env` (defaults to `mongodb://appuser:dbuser123@kaviya_database:5000/myapp?authSource=admin`). If developing locally without the service name, use `mongodb://appuser:dbuser123@localhost:5000/myapp?authSource=admin`.
