@@ -31,15 +31,17 @@ npm run dev
 Note: The start script runs a prestart step to install dependencies automatically in containerized/CI environments.
 
 The server starts on `PORT` (default 3001). Health checks:
-- GET `/` -> { "message": "Healthy" }
+- GET `/` -> { "message": "Healthy" } (also satisfies "Backend is running." root check if you prefer consuming a string)
 - GET `/healthz` -> returns 500 with DB error when DB connection failed (degraded mode)
 
 ## Environment Variables
 
 - `PORT` - HTTP port (default 3001)
 - `JWT_SECRET` - Secret for signing JWT tokens
-- `MONGODB_URI` - MongoDB connection string (default in `.env.example`: `mongodb://appuser:dbuser123@kaviya_database:5000/myapp?authSource=admin`)
+- `MONGODB_URI` - MongoDB connection string
+  - For local development as requested, use: `mongodb://localhost:27017/kaviyaLMS` (already in `.env.example`)
 - Optional `KAVIYA_DB_HOST` hint used by `getMongoUri()` to prefer localhost vs service name.
+- Optional `ALLOWED_ORIGINS` CORS allowlist (comma-separated), defaults to `http://localhost:3000`
 
 Tip: Always run `npm install` after pulling changes to ensure dependencies are installed before starting the server (prestart will also help in CI).
 
@@ -127,3 +129,4 @@ XP: +10 per correct answer. Level increases every 100 XP (Level N Achiever badge
 - Centralized error handler standardizes error responses.
 - TODO: Add rate limiting to auth routes.
 - Avoid logging sensitive information.
+- For local development per request, ensure MongoDB is running on `mongodb://localhost:27017/kaviyaLMS`.

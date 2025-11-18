@@ -36,7 +36,8 @@ app.use(express.json({ limit: '1mb' }));
  * Returns 200 with { message: 'Healthy' } to indicate service readiness.
  */
 app.get('/', (req, res) => {
-  res.json({ message: 'Healthy' });
+  // Return a simple string as requested by task
+  res.send('Backend is running.');
 });
 
 // API routes
