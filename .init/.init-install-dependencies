@@ -1,0 +1,4 @@
+{
+    "command": "source venv/bin/activate && pip install -r requirements.txt",
+    "working_directory": "/home/kavia/workspace/code-generation/kaviya-kids-learning-hub-263928-263939/kaviya_backend"
+}
