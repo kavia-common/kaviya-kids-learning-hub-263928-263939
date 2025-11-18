@@ -25,7 +25,9 @@ For local development with the React app:
 Set:
   ALLOWED_ORIGINS=http://localhost:3000
 
-Note: If you set `ALLOWED_ORIGINS=*`, credentials (cookies) are disabled as per CORS rules.
+Important:
+- If you set `ALLOWED_ORIGINS=*`, credentials (cookies) are disabled as per CORS rules. Prefer listing explicit origins for local dev.
+- Axios/fetch should target the same origin when using a CRA/Next proxy via baseURL `/api`.
 
 ## Auth Routes
 
@@ -37,7 +39,9 @@ Note: If you set `ALLOWED_ORIGINS=*`, credentials (cookies) are disabled as per 
   Body: { username, password }
   Response: { token, user }
 
-Both routes emit minimal structured logs to stdout for temporary troubleshooting and return consistent error shapes:
+Compatibility: The server also accepts POST /signup and POST /login and routes them internally to `/api/*` to ease integration.
+
+Temporary logging: Both routes emit minimal structured logs to stdout for troubleshooting and return consistent error shapes:
 {
   "error": {
     "code": "AUTH_INVALID",
@@ -48,5 +52,7 @@ Both routes emit minimal structured logs to stdout for temporary troubleshooting
 ## Health
 
 - GET / returns "Backend is running."
+- GET /api/health returns `{ "status": "ok" }` (always 200 for connectivity checks)
 - GET /healthz returns a 500 JSON error if DB failed at startup (degraded mode).
+- GET /_health returns a simple "OK" page to test browser access.
 

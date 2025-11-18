@@ -3,7 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import router from './routes/index.js';
 import { connectDB, getMongoUri } from './config/db.js';
-import { errorHandler } from './utils/errors.js';
+import { errorHandler, ApplicationError } from './utils/errors.js';
 
 const app = express();
 
@@ -41,6 +41,89 @@ app.get('/', (req, res) => {
 });
 
 /**
+ * Lightweight health endpoint for frontend pings.
+ * PUBLIC_INTERFACE
+ * GET /api/health
+ * Returns 200 OK regardless of DB state.
+ */
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
+
+/**
+ * Convenience health page for manual check from browser.
+ * PUBLIC_INTERFACE
+ * GET /_health
+ * Returns plain text 'OK' and echoes CORS origin allowance.
+ */
+app.get('/_health', (req, res) => {
+  res.status(200).send('OK');
+});
+
+/**
+ * Temporary request logging middleware for /api/login to aid troubleshooting.
+ * Masks sensitive fields and logs outcome without exposing secrets.
+ */
+function loginLogger(req, res, next) {
+  if (req.method === 'POST' && (req.path === '/login' || req.path === '/api/login')) {
+    const safeBody = {
+      username: req.body?.username || null,
+      password: req.body?.password ? '[REDACTED]' : null,
+    };
+    // eslint-disable-next-line no-console
+    console.log(JSON.stringify({
+      level: 'INFO',
+      route: req.originalUrl,
+      method: req.method,
+      body: safeBody,
+      origin: req.headers.origin || null,
+      ts: new Date().toISOString(),
+    }));
+
+    const start = Date.now();
+    const originalJson = res.json.bind(res);
+    res.json = (data) => {
+      // eslint-disable-next-line no-console
+      console.log(JSON.stringify({
+        level: 'INFO',
+        route: req.originalUrl,
+        method: req.method,
+        status: res.statusCode,
+        duration_ms: Date.now() - start,
+        outcome: res.statusCode >= 200 && res.statusCode < 400 ? 'success' : 'error',
+        ts: new Date().toISOString(),
+      }));
+      return originalJson(data);
+    };
+  }
+  next();
+}
+app.use(loginLogger);
+
+/**
+ * Compatibility handlers to support both '/login' and '/api/login' as requested.
+ * PUBLIC_INTERFACE
+ * POST /login
+ * Delegates to /api/login to maintain a single implementation.
+ */
+app.post('/login', (req, res, next) => {
+  // If router under /api provides /login, we call next() to let it 404 here,
+  // but better to forward by rewriting url then hand off to router.
+  req.url = '/login';
+  return router.handle(req, res, next);
+});
+
+/**
+ * Also provide /signup -> /api/signup compatibility.
+ * PUBLIC_INTERFACE
+ * POST /signup
+ */
+app.post('/signup', (req, res, next) => {
+  req.url = '/signup';
+  return router.handle(req, res, next);
+});
+
+/**
  * PUBLIC_INTERFACE
  * API routes are mounted under /api.
  * - /api/login and /api/signup are implemented in routes/index.js
@@ -49,8 +132,14 @@ app.get('/', (req, res) => {
  */
 app.use('/api', router);
 
-// Centralized error handling
-app.use(errorHandler);
+// Centralized error handling: ensure JSON errors (avoid axios 'Network Error' when server responds)
+app.use((err, req, res, next) => {
+  // Normalize any non-ApplicationError to ApplicationError shape
+  if (!(err instanceof ApplicationError)) {
+    return errorHandler(err, req, res, next);
+  }
+  return errorHandler(err, req, res, next);
+});
 
 // Start server after DB connection
 const PORT = parseInt(process.env.PORT || '3001', 10);
