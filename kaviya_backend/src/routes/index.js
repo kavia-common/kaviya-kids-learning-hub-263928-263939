@@ -26,6 +26,9 @@ Returns: { token, user: { id, username, role, xp, level, badges } }
 */
 router.post('/signup', asyncHandler(async (req, res) => {
   const { username, password, role } = req.body || {};
+  // eslint-disable-next-line no-console
+  console.log(JSON.stringify({ level: 'INFO', route: 'POST /api/signup', username: username || null, role: role || null, ts: new Date().toISOString() }));
+
   if (!username || !password || !role || !['kid', 'parent'].includes(role)) {
     throw new ApplicationError('Invalid input', 'VALIDATION_ERROR', 400);
   }
@@ -43,6 +46,9 @@ router.post('/signup', asyncHandler(async (req, res) => {
   }
 
   const token = generateToken({ id: user._id.toString(), role: user.role });
+  // eslint-disable-next-line no-console
+  console.log(JSON.stringify({ level: 'INFO', route: 'POST /api/signup', outcome: 'success', userId: String(user._id), role: user.role, ts: new Date().toISOString() }));
+
   return res.status(201).json({
     token,
     user: {
@@ -64,6 +70,10 @@ Returns: { token, user: { id, username, role, xp, level, badges } }
 */
 router.post('/login', asyncHandler(async (req, res) => {
   const { username, password } = req.body || {};
+  // Minimal structured log without sensitive data
+  // eslint-disable-next-line no-console
+  console.log(JSON.stringify({ level: 'INFO', route: 'POST /api/login', username: username || null, ts: new Date().toISOString() }));
+
   if (!username || !password) {
     throw new ApplicationError('Invalid input', 'VALIDATION_ERROR', 400);
   }
@@ -79,6 +89,9 @@ router.post('/login', asyncHandler(async (req, res) => {
   }
 
   const token = generateToken({ id: user._id.toString(), role: user.role });
+  // eslint-disable-next-line no-console
+  console.log(JSON.stringify({ level: 'INFO', route: 'POST /api/login', outcome: 'success', userId: String(user._id), role: user.role, ts: new Date().toISOString() }));
+
   return res.json({
     token,
     user: {

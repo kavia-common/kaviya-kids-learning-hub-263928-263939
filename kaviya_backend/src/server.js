@@ -7,8 +7,26 @@ import { errorHandler } from './utils/errors.js';
 
 const app = express();
 
-// CORS - allow all in dev. For production, restrict origins via env.
-app.use(cors({ origin: '*', credentials: true }));
+// Derive allowed origins from env (comma-separated). If not provided, default to localhost:3000
+const rawOrigins = process.env.ALLOWED_ORIGINS || 'http://localhost:3000';
+const allowedOrigins = rawOrigins.split(',').map(s => s.trim()).filter(Boolean);
+
+// CORS config: when using credentials, cannot use wildcard origin.
+// We echo back origin only if it's in the allowed list. For dev safety, if "*" explicitly set, disable credentials.
+const useWildcard = allowedOrigins.includes('*');
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow non-browser requests (no origin) and allowed origins
+    if (!origin || useWildcard || allowedOrigins.includes(origin)) {
+      return callback(null, origin || true);
+    }
+    return callback(new Error('CORS not allowed for this origin'), false);
+  },
+  credentials: !useWildcard,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
+
 app.use(express.json({ limit: '1mb' }));
 
 /**
