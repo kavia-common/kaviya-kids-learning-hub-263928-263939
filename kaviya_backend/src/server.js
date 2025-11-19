@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
+import mongoose from 'mongoose';
 import router from './routes/index.js';
 import { connectDB, getMongoUri } from './config/db.js';
 import { errorHandler, ApplicationError } from './utils/errors.js';
@@ -33,10 +34,9 @@ app.use(express.json({ limit: '1mb' }));
  * Root health check.
  * PUBLIC_INTERFACE
  * GET /
- * Returns 200 with { message: 'Healthy' } to indicate service readiness.
+ * Returns 200 with a simple message to indicate service readiness.
  */
 app.get('/', (req, res) => {
-  // Return a simple string as requested by task
   res.send('Backend is running.');
 });
 
@@ -51,10 +51,22 @@ app.get('/api/health', (req, res) => {
 });
 
 /**
+ * PUBLIC_INTERFACE
+ * Readiness check with DB state (non-throwing).
+ * GET /api/ready
+ * Returns 200 with db: 'up' if mongoose connected, otherwise 503 with db: 'down'.
+ */
+app.get('/api/ready', (req, res) => {
+  const state = mongoose?.connection?.readyState === 1 ? 'up' : 'down';
+  const http = state === 'up' ? 200 : 503;
+  res.status(http).json({ status: 'ok', db: state });
+});
+
+/**
  * Convenience health page for manual check from browser.
  * PUBLIC_INTERFACE
  * GET /_health
- * Returns plain text 'OK' and echoes CORS origin allowance.
+ * Returns plain text 'OK'.
  */
 app.get('/_health', (req, res) => {
   res.status(200).send('OK');
@@ -101,14 +113,12 @@ function loginLogger(req, res, next) {
 app.use(loginLogger);
 
 /**
- * Compatibility handlers to support both '/login' and '/api/login' as requested.
+ * Compatibility handlers to support both '/login' and '/api/login'.
  * PUBLIC_INTERFACE
  * POST /login
  * Delegates to /api/login to maintain a single implementation.
  */
 app.post('/login', (req, res, next) => {
-  // If router under /api provides /login, we call next() to let it 404 here,
-  // but better to forward by rewriting url then hand off to router.
   req.url = '/login';
   return router.handle(req, res, next);
 });
@@ -134,7 +144,6 @@ app.use('/api', router);
 
 // Centralized error handling: ensure JSON errors (avoid axios 'Network Error' when server responds)
 app.use((err, req, res, next) => {
-  // Normalize any non-ApplicationError to ApplicationError shape
   if (!(err instanceof ApplicationError)) {
     return errorHandler(err, req, res, next);
   }
@@ -156,7 +165,9 @@ connectDB(MONGODB_URI)
     // eslint-disable-next-line no-console
     console.error('Failed to start server due to DB error:', err?.message);
     // Do not exit hard in containerized env; keep process alive with basic server to expose health error
-    app.get('/healthz', (req, res) => res.status(500).json({ error: { code: 'DB_CONNECTION_FAILED', message: 'Database unavailable' } }));
+    app.get('/healthz', (req, res) =>
+      res.status(500).json({ error: { code: 'DB_CONNECTION_FAILED', message: 'Database unavailable' } })
+    );
     app.listen(PORT, () => {
       // eslint-disable-next-line no-console
       console.log(`Server started in degraded mode on port ${PORT}`);
