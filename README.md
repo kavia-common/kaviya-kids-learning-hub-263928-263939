@@ -9,7 +9,7 @@ Backend quick start (Node/Express):
 
 Preview runners:
 - If the platform looks for a Procfile or shell script, use kaviya_backend/Procfile, kaviya_backend/start.sh, or kaviya_backend/run.sh
-- Expected commands (no Python/uvicorn):
+- Expected commands (no Python/uvicorn/venv):
   - PORT=${PORT:-3000} npm start
   - or PORT=${PORT:-3000} node src/server.js
 

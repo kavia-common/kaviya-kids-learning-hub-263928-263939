@@ -1,2 +1,2 @@
-web: PORT=${PORT:-3000} node src/server.js
-preview: PORT=${PORT:-3000} node src/server.js
+web: PORT=${PORT:-3000} npm start
+preview: PORT=${PORT:-3000} npm start

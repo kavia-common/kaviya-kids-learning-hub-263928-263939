@@ -7,7 +7,7 @@ if [ -z "$PORT" ]; then
   export PORT=3000
 fi
 
-echo "Starting Kaviya Backend (Node/Express) on PORT=$PORT ..."
+echo "Starting Kaviya Backend (Node/Express only) on PORT=$PORT ... (no uvicorn/venv)"
 # Prefer npm start for environments that rely on lifecycle hooks, fallback to node
 if command -v npm >/dev/null 2>&1; then
   exec env PORT="$PORT" npm start --silent

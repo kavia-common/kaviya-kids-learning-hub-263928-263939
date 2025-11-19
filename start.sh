@@ -9,7 +9,7 @@ if [ -z "$PORT" ]; then
   export PORT=3000
 fi
 
-echo "Root start.sh delegating to kaviya_backend on PORT=$PORT ..."
+echo "Root start.sh delegating to kaviya_backend on PORT=$PORT ... (Node/Express only; no uvicorn/venv)"
 if command -v npm >/dev/null 2>&1; then
   exec env PORT="$PORT" npm start --silent
 else
