@@ -1,0 +1,21 @@
+{
+  "containers": {
+    "kaviya_backend": {
+      "start": {
+        "command": "PORT=${PORT:-3000} npm start",
+        "working_dir": "kaviya_backend",
+        "env": {
+          "PORT": "${PORT:-3000}"
+        }
+      },
+      "health": {
+        "path": "/api/health",
+        "port": 3000
+      },
+      "notes": [
+        "Force Node/Express preview; ignore any legacy uvicorn/venv hooks.",
+        "package.json start runs: node src/server.js"
+      ]
+    }
+  }
+}

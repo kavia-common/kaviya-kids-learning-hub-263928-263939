@@ -1,0 +1,16 @@
+# Explicit preview configuration for kaviya_backend to avoid Python/FastAPI runners.
+# This file is used by certain preview systems to determine the start command and health endpoints.
+service: kaviya_backend
+start:
+  command: "PORT=${PORT:-3000} npm start"
+  working_dir: "."
+  env:
+    PORT: "${PORT:-3000}"
+health:
+  path: "/api/health"
+  port: 3000
+  interval: 10s
+  timeout: 3s
+notes:
+  - "Backend is Node/Express only. Do not run uvicorn or source venv/bin/activate."
+  - "Main entry: src/server.js; npm start calls node src/server.js."
