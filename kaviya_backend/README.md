@@ -8,20 +8,21 @@ This service exposes REST endpoints for authentication, quizzes, progress, rewar
    npm install
 
 2) Configure environment (see `.env.example`):
-   - PORT=3001
+   - PORT=3000
    - JWT_SECRET=your-strong-secret
    - MONGODB_URI=mongodb://localhost:27017/kaviya
    - ALLOWED_ORIGINS=http://localhost:3000
 
 3) Start
    npm run start
+   # The server listens on 0.0.0.0:3000 by default (override with PORT)
 
 ## CORS
 
 The server reads `ALLOWED_ORIGINS` (comma-separated) and will only allow those origins.
 For local development with the React app:
 - Frontend on http://localhost:3000
-- Backend on http://localhost:3001
+- Backend on http://localhost:3000 (default; set PORT if you prefer a different port)
 Set:
   ALLOWED_ORIGINS=http://localhost:3000
 

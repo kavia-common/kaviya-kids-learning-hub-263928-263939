@@ -151,7 +151,7 @@ app.use((err, req, res, next) => {
 });
 
 // Start server after DB connection
-const PORT = parseInt(process.env.PORT || '3001', 10);
+const PORT = parseInt(process.env.PORT || '3000', 10); // Bind to 3000 by default for container compatibility
 const MONGODB_URI = getMongoUri();
 
 connectDB(MONGODB_URI)
