@@ -17,6 +17,11 @@ This service exposes REST endpoints for authentication, quizzes, progress, rewar
    npm run start
    # The server listens on 0.0.0.0:3000 by default (override with PORT)
 
+Preview/Procfile-based environments:
+- Use the provided Procfile or start.sh/run.sh which execute:
+  PORT=${PORT:-3000} node src/server.js
+- Do not attempt to run Python/FastAPI/uvicorn; the backend is Node/Express.
+
 ## CORS
 
 The server reads `ALLOWED_ORIGINS` (comma-separated) and will only allow those origins.
