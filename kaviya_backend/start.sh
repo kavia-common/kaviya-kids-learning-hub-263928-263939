@@ -8,4 +8,9 @@ if [ -z "$PORT" ]; then
 fi
 
 echo "Starting Kaviya Backend (Node/Express) on PORT=$PORT ..."
-exec node src/server.js
+# Prefer npm start for environments that rely on lifecycle hooks, fallback to node
+if command -v npm >/dev/null 2>&1; then
+  exec env PORT="$PORT" npm start --silent
+else
+  exec node src/server.js
+fi

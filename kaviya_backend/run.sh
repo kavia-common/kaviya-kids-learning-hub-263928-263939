@@ -7,4 +7,9 @@ if [ -z "$PORT" ]; then
 fi
 
 echo "Running server via run.sh on PORT=$PORT"
-exec node src/server.js
+# Prefer npm start when available to ensure consistent behavior with package.json
+if command -v npm >/dev/null 2>&1; then
+  exec env PORT="$PORT" npm start --silent
+else
+  exec node src/server.js
+fi

@@ -5,6 +5,7 @@ import mongoose from 'mongoose';
 import router from './routes/index.js';
 import { connectDB, getMongoUri } from './config/db.js';
 import { errorHandler, ApplicationError } from './utils/errors.js';
+// Note: Startup is handled by PORT=3000 npm start or node src/server.js; no Python/uvicorn.
 
 const app = express();
 
