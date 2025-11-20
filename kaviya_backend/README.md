@@ -22,6 +22,21 @@ Preview/Procfile-based environments:
   PORT=${PORT:-3000} node src/server.js
 - Do not attempt to run Python/FastAPI/uvicorn; the backend is Node/Express.
 
+## Docker
+
+This image does not create or use any Python virtual environment. The Dockerfile installs Node dependencies only and runs `node src/server.js`.
+
+Build:
+  docker build -t kaviya-backend ./kaviya-kids-learning-hub-263928-263939/kaviya_backend
+
+Run:
+  docker run --rm -p 3000:3000 \
+    -e PORT=3000 \
+    -e JWT_SECRET=your-strong-secret \
+    -e MONGODB_URI="mongodb://appuser:dbuser123@localhost:5000/myapp?authSource=admin" \
+    -e ALLOWED_ORIGINS="http://localhost:3000" \
+    kaviya-backend
+
 ## CORS
 
 The server reads `ALLOWED_ORIGINS` (comma-separated) and will only allow those origins.
@@ -61,4 +76,3 @@ Temporary logging: Both routes emit minimal structured logs to stdout for troubl
 - GET /api/health returns `{ "status": "ok" }` (always 200 for connectivity checks)
 - GET /healthz returns a 500 JSON error if DB failed at startup (degraded mode).
 - GET /_health returns a simple "OK" page to test browser access.
-

@@ -4,11 +4,22 @@ FROM node:18-alpine
 # Set working directory
 WORKDIR /app
 
-# Install dependencies first (leverage Docker layer caching)
-COPY package.json package-lock.json* ./
-RUN npm install --production --no-audit --no-fund
+# Do not assume any Python/venv setup. This container runs Node/Express only.
+# The FastAPI stub under src/api is solely for generating OpenAPI when needed and
+# is not used at runtime inside this image.
 
-# Copy source code
+# Install dependencies first (leverage Docker layer caching)
+# Copy only package manifests first
+COPY package*.json ./
+
+# Prefer npm ci when lockfile exists for reproducible builds; fallback to npm install
+RUN if [ -f package-lock.json ]; then \
+      npm ci --only=production --no-audit --no-fund; \
+    else \
+      npm install --production --no-audit --no-fund; \
+    fi
+
+# Copy application source
 COPY src ./src
 COPY scripts ./scripts
 

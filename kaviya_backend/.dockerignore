@@ -1,0 +1,29 @@
+# Node artifacts
+node_modules
+npm-debug.log
+yarn-error.log
+
+# Local env files
+.env
+.env.local
+.env.development
+.env.production
+
+# VCS
+.git
+.gitignore
+
+# OS/editor
+.DS_Store
+.vscode
+.idea
+
+# Python-related (not used at runtime; prevent accidental copy)
+venv
+.venv
+__pycache__/
+*.pyc
+interfaces/
+
+# Docker
+Dockerfile*
